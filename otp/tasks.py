@@ -7,7 +7,7 @@ from .Email import send_otp_password
 from otp import OTPT,HOTP
 @shared_task()
 def generate_otp( interval):
-    otp_handler=HOTP(interval=interval)
+    otp_handler=HOTP(digits=8,interval=interval)
     otp_pass=otp_handler.now()
     return otp_pass
 

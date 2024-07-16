@@ -1,13 +1,15 @@
+#django imports
 from django.contrib.auth.models import User
 from django.shortcuts import render, redirect
-
+#application import
 from .Forms import SignupForm, OtpForm
 from .tasks import generate_otp_password,send_otp_email
 
+#other dependecies
 import time
 import datetime
 
-# Create your views here.
+# Sign up view the crete a session to validate the user credentials befor saving it
 def sign_up_veiw(request):
     form=SignupForm
     if request.method == 'POST':
@@ -37,15 +39,15 @@ def check_user(request):
     username=request.session.username
     email=request.session.email
     password=request.session.password
-    
+    massage=None
     if request.method=='GET':
         
         otp= generate_otp_password.aply_async(time,interval=60).get()
         send_otp_email(email,username,otp)
         request.session["otp"]=otp
-        print (request.otp)
+        message="an email associated with an Otp , Be Carfull the otp will expire after 90 seconds  "
         
-        return render(request,"check_user.html",{'form':form})
+        return render(request,"check_user.html",{'form':form,message:message})
     if  request.method=='POST':
         
         new_otp=otp= generate_otp_password.aply_async(interval=90).get()
@@ -54,22 +56,9 @@ def check_user(request):
         otp_passed=form.cleandata["otp_password"]
         if otp_passed==request.session["otp"]:
             user=User.objects.create_user(username=username,password=password,email=email).save()
-            redirect(request,"login.html","/login/")
-        
-        
-    
-    #handling the task:
-    
-    
-    
-    
-    
-    
-
-    
-    
+            message=''' your has signup process has been successful and you can login in now'''
+            redirect(request,"login.html","/login/",{"form":form,"message":message},)
             
-            
-            
-        
-    
+        else:
+            message=''' your has signup process has been unsuccessful, it seems the you otp has expired'''
+            return render(request,"check_user.html",{'form':form,"message":message})
