@@ -1,7 +1,11 @@
-from django.shortcuts import render, redirect
-from .Forms import SignupForm, OtpForm
-from .tasks import generate_otp_password,send_otp_email,count_down
 from django.contrib.auth.models import User
+from django.shortcuts import render, redirect
+
+from .Forms import SignupForm, OtpForm
+from .tasks import generate_otp_password,send_otp_email
+
+import time
+import datetime
 
 # Create your views here.
 def sign_up_veiw(request):
@@ -9,12 +13,17 @@ def sign_up_veiw(request):
     if request.method == 'POST':
         form=form(request.POST)
         if form.is_valid():
+            
+            
             user_username=form.cleaned_data["Username"]
             user_email=form.cleaned_data["Email"]
             user_password=form.cleaned_data["Password"]
-            user=User.objects.create_user(username=user_username, email=user_email, password=user_password)
-            id=user.id
-            return redirect(request,url="otp_check/<int>:id /<str>:user_email/")
+            
+            request.session["username"]=user_username
+            request.session["eamail"]=user_password
+            request.session["password"]=user_password
+            
+            return redirect(request,url="check_user/")
     else:
         
         form=form()
@@ -22,36 +31,31 @@ def sign_up_veiw(request):
         return render(request,"signup.html",{'form':form})
     
     
-def check_user(request,id,email):
+def check_user(request):
     
     form=OtpForm
-    user=User.objects.get(id=id,eamail=email)
-    username=user.username
-    if request.method=='GET':
-        countdown=count_down().aply_async()
-        pas=generate_otp_password.aply_async(count=countdown)
-        send_otp_email.aply_async(eamail=email,otp_password=pas,username=username)
-        
-        return render(request,"otp.html",{'countdown':countdown,'form':form,})
-    elif request.method =="POST":
-        if request.data ==None :
-            otp_pass=generate_otp_password.aply_async()
-            send_otp_email.aply_async(eamail=email,otp_password=generate_otp_password.aply_async(),username=username)
-            countdown=count_down().aply_async()
-            form=form(request.Post)
-            return render(request,"otp.html",{'countdown':countdown,'form':form,})
-        else:
-            form=form(request.Post)
-            if form.is_valid():
-                otp=form["otp_password"]
-                if otp == otp_pass:
-                    user.save()
-                    return redirect(request,"login.html","login/")
-            
-            
-            
+    username=request.session.username
+    email=request.session.email
+    password=request.session.password
     
-            
+    if request.method=='GET':
+        
+        otp= generate_otp_password.aply_async(time,interval=60).get()
+        send_otp_email(email,username,otp)
+        request.session["otp"]=otp
+        print (request.otp)
+        
+        return render(request,"check_user.html",{'form':form})
+    if  request.method=='POST':
+        
+        new_otp=otp= generate_otp_password.aply_async(interval=90).get()
+        form=form(request.Post)
+        form.is_valid()
+        otp_passed=form.cleandata["otp_password"]
+        if otp_passed==request.session["otp"]:
+            user=User.objects.create_user(username=username,password=password,email=email).save()
+            redirect(request,"login.html","/login/")
+        
         
     
     #handling the task:
