@@ -1,0 +1,23 @@
+{%extends base.html%}
+
+
+{%block content%}
+{% extends "base.html" %}
+
+{% block content %}
+ {{if message is not None }}
+<h1>{{message}}</h1>
+<div class="otp-form">
+    <form method="post">
+      {% csrf_token %}
+      {{ form.as_p }}
+      <button type="submit">Verify OTP</button>
+    </form>
+    <form method="get" action="{% url 'new_otp' %}">
+      <button type="submit">Request New OTP</button>
+    </form>
+  </div>
+{% endblock %}
+
+
+{%end block%}

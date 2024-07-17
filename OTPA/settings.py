@@ -141,3 +141,9 @@ CELERY_RESULT_SERIALIZER = 'json'
 
 
 # Email settings
+EMAIL_HOST='smtp.gmail.com'
+EMAIL_PORT='587'
+EMAIL_DEFAULT_FROM = 'alihadi210403@gmail.com'
+EMAIL_HOST_USERNAME='alihadi210403@gmail.com'
+EMAIL_HOST_PASSWORD='vkkc prtl flbz nxeb'
+
