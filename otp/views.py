@@ -10,39 +10,40 @@ import time
 import datetime
 
 # Sign up view the crete a session to validate the user credentials befor saving it
-def sign_up_veiw(request):
-    form=SignupForm
+from django.shortcuts import render, redirect
+from django.urls import reverse
+
+def sign_up_view(request):
     if request.method == 'POST':
-        form=form(request.POST)
+        form = SignupForm(request.POST)
         if form.is_valid():
+            user_username = form.cleaned_data["username"]
+            user_email = form.cleaned_data["email"]
+            user_password = form.cleaned_data["password"]
             
+            # Store user data in the session
+            request.session["username"] = user_username
+            request.session["email"] = user_email  # Fixed typo here
+            request.session["password"] = user_password
             
-            user_username=form.cleaned_data["Username"]
-            user_email=form.cleaned_data["Email"]
-            user_password=form.cleaned_data["Password"]
-            
-            request.session["username"]=user_username
-            request.session["eamail"]=user_password
-            request.session["password"]=user_password
-            
-            return redirect(request,url="check_user/")
+            # Redirect to the check_user_url (make sure to use the correct URL name)
+            return redirect(reverse("check_user_url"))
     else:
-        
-        form=form()
-        
-        return render(request,"signup.html",{'form':form})
-    
+        form = SignupForm()  # Instantiate form for GET request
+
+    return render(request, "signup.html", {'form': form})
+
     
 def check_user(request):
     
     form=OtpForm
-    username=request.session.username
-    email=request.session.email
-    password=request.session.password
+    username=request.session["username"]
+    email=request.session["email"]
+    password=request.session["password"]
     massage=None
     if request.method=='GET':
         
-        otp= generate_otp_password.aply_async(time,interval=60).get()
+        otp= generate_otp_password(interval=60).apply_async().get()
         send_otp_email(email,username,otp)
         request.session["otp"]=otp
         message="an email associated with an Otp , Be Carfull the otp will expire after 90 seconds  "
@@ -57,8 +58,11 @@ def check_user(request):
         if otp_passed==request.session["otp"]:
             user=User.objects.create_user(username=username,password=password,email=email).save()
             message=''' your has signup process has been successful and you can login in now'''
-            redirect(request,"login.html","/login/",{"form":form,"message":message},)
+            redirect(request,{"message":message},reverse("login_url"))
             
         else:
             message=''' your has signup process has been unsuccessful, it seems the you otp has expired'''
             return render(request,"check_user.html",{'form':form,"message":message})
+        
+def sign_in(request):
+    return render(request,"signin.html")

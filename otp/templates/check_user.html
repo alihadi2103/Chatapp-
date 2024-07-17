@@ -13,7 +13,7 @@
       {{ form.as_p }}
       <button type="submit">Verify OTP</button>
     </form>
-    <form method="get" action="{% url 'new_otp' %}">
+    <form method="get" action="{% url '/check_user/' %}">
       <button type="submit">Request New OTP</button>
     </form>
   </div>

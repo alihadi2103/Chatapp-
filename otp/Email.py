@@ -1,7 +1,7 @@
 from django.template import Context
 from django.template.loader import render_to_string
 from django.core.mail import EmailMessage
-from django.core import settings
+from django.conf import settings
 
 
 def send_otp_password(email,username,otp_password):

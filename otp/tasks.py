@@ -4,10 +4,13 @@ import time
 import datetime
 from celery import shared_task
 from .Email import send_otp_password
-from otp import OTPT,HOTP
+from pyotp.hotp import HOTP
+from pyotp.totp import TOTP
+
+
 @shared_task()
-def generate_otp( interval):
-    otp_handler=HOTP('base32secret3232',digits=8,interval=interval)
+def generate_otp_password( interval):
+    otp_handler=TOTP('base32secret3232',digits=8,interval=interval)
     otp_pass=otp_handler.now()
     return otp_pass
 
