@@ -3,7 +3,7 @@ from django.contrib.auth.models import User
 from django.shortcuts import render, redirect
 #application import
 from .Forms import SignupForm, OtpForm
-from .tasks import generate_otp_password,send_otp_email
+from .tasks import generate_otp_password,send_otp_email,send_otp
 
 #other dependecies
 import time
@@ -12,6 +12,7 @@ import datetime
 # Sign up view the crete a session to validate the user credentials befor saving it
 from django.shortcuts import render, redirect
 from django.urls import reverse
+import asyncio
 
 def sign_up_view(request):
     if request.method == 'POST':
@@ -36,22 +37,36 @@ def sign_up_view(request):
     
 def check_user(request):
     
-    form=OtpForm
+    form=OtpForm()
+   
     username=request.session["username"]
     email=request.session["email"]
     password=request.session["password"]
+    print("the username in the session is ",username)
+    print("the email in the session is ",email)
+    print("the password in the session is ",password)
+    
     massage=None
     if request.method=='GET':
         
-        otp= generate_otp_password(interval=60).apply_async().get()
-        send_otp_email(email,username,otp)
+        otp= generate_otp_password(interval=90)
+        
+        
+        print("the otpis is:",otp)
         request.session["otp"]=otp
+        print("="*100)
+        print("sending email has started")
+        send_otp.apply_async([username,email,otp])
+        print("sending email has finished")
+        print("="*100)
+        print("the session otp",request.session["otp"])
+        
         message="an email associated with an Otp , Be Carfull the otp will expire after 90 seconds  "
         
         return render(request,"check_user.html",{'form':form,message:message})
     if  request.method=='POST':
         
-        new_otp=otp= generate_otp_password.aply_async(interval=90).get()
+        new_otp=otp= generate_otp_password(interval=90)
         form=form(request.Post)
         form.is_valid()
         otp_passed=form.cleandata["otp_password"]

@@ -1,3 +1,3 @@
-from .celery import app 
+from .celery import app as OTPA_APP
 
-__all__=('OATP_app',)
+__all__=('OTPA_APP',)

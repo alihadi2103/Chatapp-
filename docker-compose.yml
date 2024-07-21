@@ -1,0 +1,35 @@
+version: "3.13"
+
+services:
+  otpapp:
+    image: otpapp/django
+    build: .
+    command: python3 manage.py runserver 0.0.0.0:8000
+    ports:
+      - "8000:8000"
+    volumes:
+      - .:/django
+    container_name: otp_email
+
+    depends_on:
+    - redis
+
+  redis:
+    image: redis
+    container_name: redis
+    ports:
+      - "6379:6379"
+
+  celery:
+    restart: always
+    build:
+      context: .
+    command: celery -A OTPA worker -l DEBUG
+    volumes:
+      - .:/django
+    environment:
+      - CELERY_BROKER_URL=redis://redis:6379/0
+      - CELERY_RESULT_BACKEND=redis://redis:6379/0
+    depends_on:
+      - redis
+    container_name: celery
