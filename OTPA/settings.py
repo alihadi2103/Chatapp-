@@ -147,7 +147,7 @@ EMAIL_HOST = 'smtp.gmail.com'
 EMAIL_USE_TLS = True
 EMAIL_PORT = 587  # Port should be an integer
 EMAIL_USE_SSL = False
-EMAIL_HOST_USER = 'alihadi210403@gmail.com'  # This key should be EMAIL_HOST_USER
-EMAIL_HOST_PASSWORD = 'kiprzvlfhqnrgzgq'  # Ensure no spaces in the password
+EMAIL_HOST_USER = ''  # This key should be EMAIL_HOST_USER
+EMAIL_HOST_PASSWORD = ''  # Ensure no spaces in the password
 DEFAULT_FROM_EMAIL = EMAIL_HOST_USER  # This key should be DEFAULT_FROM_EMAIL
 
